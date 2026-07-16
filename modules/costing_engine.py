@@ -899,7 +899,287 @@ class CostingEngine:
         self.db.commit()
         return {"status": "locked", "period": f"{year}-{month:02d}", "note": "force-locked"}
 
-    # ── 8. Reporting ──────────────────────────────────────────────────────────
+    # ── 8. Labor Cost GL Reclass ──────────────────────────────────────────────
+
+    def post_labor_reclass(
+        self,
+        entity_id:       str,
+        year:            int,
+        month:           int,
+        beban_gaji_code: str,
+        created_by:      str = "system",
+    ) -> dict:
+        """
+        Distribusikan beban gaji aktual (dari payroll) ke GL per-project/cost_center
+        berdasarkan rasio jam timesheet bulan itu.
+
+        Prasyarat:
+          1. analytic_period.labor_allocation_posted = TRUE (timesheet sudah ke analytic ledger)
+          2. employee_payroll_history sudah ada untuk bulan ini (payroll sudah dihitung)
+          3. labor_reclass_gl_posted = FALSE (belum pernah diposting, mencegah double-posting)
+
+        Jurnal reclass (satu batch per periode):
+          Dr  Beban Gaji — <project_code> (cost_center tagged)  =  aktual_payroll × rasio_project
+          Dr  Beban Gaji — Bench/Internal                       =  aktual_payroll × rasio_bench
+          Cr  Beban Gaji (pool, no cost_center)                 =  total aktual_payroll (offset)
+
+        Sumber rasio: analytic_journal_line (timesheet × cost_rate per karyawan per project).
+        Sumber aktual: employee_payroll_history.bruto_bulanan.
+        """
+        from modules.journal_engine import JournalEngine, JournalEntry, JournalLine
+
+        _check_period_not_locked(self.db, entity_id, year, month)
+        period = _get_or_create_analytic_period(self.db, entity_id, year, month)
+        if not period.get("labor_allocation_posted"):
+            raise ValueError(
+                f"Labor allocation analytic untuk {year}-{month:02d} belum diposting. "
+                "Jalankan post_labor_allocation() terlebih dahulu."
+            )
+        if period.get("labor_reclass_gl_posted"):
+            raise ValueError(
+                f"Labor reclass GL untuk {year}-{month:02d} sudah pernah diposting. "
+                "Gunakan reverse_analytic_period() untuk membatalkan sebelum posting ulang."
+            )
+
+        start_date = date(year, month, 1)
+        end_date   = _last_day(year, month)
+
+        # Ambil aktual payroll per karyawan bulan ini
+        payroll_rows = self.db.execute(
+            text("""
+                SELECT employee_id, bruto_bulanan
+                FROM employee_payroll_history
+                WHERE entity_id = :eid AND year = :yr AND month = :mo
+                  AND bruto_bulanan > 0
+            """),
+            {"eid": entity_id, "yr": year, "mo": month}
+        ).fetchall()
+
+        if not payroll_rows:
+            return {"status": "skipped", "reason": "Tidak ada data payroll untuk periode ini"}
+
+        payroll_map = {str(r.employee_id): Decimal(str(r.bruto_bulanan)) for r in payroll_rows}
+
+        # Ambil distribusi jam per karyawan per project dari analytic journal
+        analytic_rows = self.db.execute(
+            text("""
+                SELECT
+                    ajl.employee_id,
+                    ajl.project_id,
+                    ajl.cost_center,
+                    SUM(ajl.debit_amount) AS allocated_cost
+                FROM analytic_journal aj
+                JOIN analytic_journal_line ajl ON ajl.journal_id = aj.id
+                WHERE aj.entity_id = :eid AND aj.year = :yr AND aj.month = :mo
+                  AND aj.status = 'posted'
+                  AND ajl.account_type IN ('direct_labor', 'idle_labor')
+                  AND ajl.employee_id IS NOT NULL
+                  AND ajl.debit_amount > 0
+                GROUP BY ajl.employee_id, ajl.project_id, ajl.cost_center
+            """),
+            {"eid": entity_id, "yr": year, "mo": month}
+        ).fetchall()
+
+        if not analytic_rows:
+            return {"status": "skipped", "reason": "Tidak ada analytic labor allocation untuk periode ini"}
+
+        # Hitung rasio per karyawan → distribusi aktual payroll
+        from collections import defaultdict
+        emp_total_analytic: dict[str, Decimal] = defaultdict(Decimal)
+        for r in analytic_rows:
+            emp_total_analytic[str(r.employee_id)] += Decimal(str(r.allocated_cost))
+
+        # Ambil project_code untuk tagging
+        project_ids = list({str(r.project_id) for r in analytic_rows if r.project_id})
+        proj_code_map: dict[str, str] = {}
+        if project_ids:
+            proj_rows = self.db.execute(
+                text("SELECT id, project_code, cost_center FROM project WHERE id = ANY(CAST(:ids AS uuid[]))"),
+                {"ids": project_ids}
+            ).fetchall()
+            proj_code_map = {str(r.id): r.project_code for r in proj_rows}
+
+        # Build GL lines: distribute each employee's actual payroll proportionally
+        je_lines: list[JournalLine] = []
+        total_reclassed = Decimal("0")
+
+        # Group Dr lines by (project_id, cost_center) to batch them
+        bucket: dict[tuple, Decimal] = defaultdict(Decimal)
+        bucket_label: dict[tuple, str] = {}
+
+        for r in analytic_rows:
+            emp_id   = str(r.employee_id)
+            actual   = payroll_map.get(emp_id, Decimal("0"))
+            analytic_total = emp_total_analytic.get(emp_id, Decimal("0"))
+            if analytic_total == 0 or actual == 0:
+                continue
+
+            ratio   = Decimal(str(r.allocated_cost)) / analytic_total
+            alloc   = (actual * ratio).quantize(Decimal("0.01"))
+            if alloc <= 0:
+                continue
+
+            proj_id   = str(r.project_id) if r.project_id else None
+            cc        = r.cost_center or "BENCH"
+            proj_code = proj_code_map.get(proj_id, "BENCH") if proj_id else "BENCH"
+            key = (proj_id, cc)
+            bucket[key] += alloc
+            bucket_label[key] = f"Reclass Beban Gaji — {proj_code} ({cc})"
+
+        for (proj_id, cc), alloc in bucket.items():
+            je_lines.append(JournalLine(
+                account_code=beban_gaji_code,
+                description=bucket_label[(proj_id, cc)],
+                debit_idr=alloc,
+                cost_center=cc if cc != "BENCH" else None,
+                project_code=proj_code_map.get(proj_id) if proj_id else None,
+            ))
+            total_reclassed += alloc
+
+        if not je_lines or total_reclassed <= 0:
+            return {"status": "skipped", "reason": "Tidak ada alokasi payroll yang bisa dihitung"}
+
+        # Cr: offset pool (no cost_center, same beban_gaji account)
+        je_lines.append(JournalLine(
+            account_code=beban_gaji_code,
+            description=f"Offset pool reclass payroll {month:02d}/{year}",
+            credit_idr=total_reclassed,
+        ))
+
+        je_result = JournalEngine(self.db).post_journal(JournalEntry(
+            entity_id=entity_id,
+            journal_type="GL",
+            journal_date=end_date,
+            description=f"Labor cost reclass GL — {month:02d}/{year}",
+            reference_no=f"RECLASS/{year}/{month:02d}",
+            created_by=created_by,
+            lines=je_lines,
+        ))
+        if not je_result["success"]:
+            raise ValueError(je_result.get("error", "JournalEngine gagal"))
+
+        # Mark period as reclassed + insert audit row
+        self.db.execute(
+            text("UPDATE analytic_period SET labor_reclass_gl_posted = TRUE WHERE entity_id = :eid AND year = :yr AND month = :mo"),
+            {"eid": entity_id, "yr": year, "mo": month}
+        )
+        self.db.execute(
+            text("""
+                INSERT INTO payroll_labor_reclass
+                  (entity_id, year, month, journal_id, employees_count, total_reclassed, created_by)
+                VALUES (:eid, :yr, :mo, :jid, :cnt, :total, :by)
+                ON CONFLICT (entity_id, year, month) DO UPDATE
+                  SET journal_id=EXCLUDED.journal_id, total_reclassed=EXCLUDED.total_reclassed,
+                      created_at=NOW()
+            """),
+            {"eid": entity_id, "yr": year, "mo": month, "jid": je_result["journal_id"],
+             "cnt": len(payroll_rows), "total": float(total_reclassed), "by": created_by}
+        )
+        self.db.commit()
+
+        return {
+            "status":          "posted",
+            "journal_id":      je_result["journal_id"],
+            "journal_no":      je_result["journal_no"],
+            "period":          f"{year}-{month:02d}",
+            "total_reclassed": float(total_reclassed),
+            "employees_count": len(payroll_rows),
+            "gl_lines":        len(je_lines),
+        }
+
+    def get_payroll_variance(self, entity_id: str, year: int, month: int) -> list[dict]:
+        """
+        Variance report: analytic estimate (timesheet × unit_cost_per_hour)
+        vs actual payroll (bruto_bulanan dari employee_payroll_history).
+
+        Positive variance = actual lebih mahal dari estimate (under-estimated cost).
+        Negative variance = actual lebih murah (over-estimated, efficient).
+
+        Return: per-employee, plus per-project distribution dari rasio timesheet.
+        """
+        payroll_rows = self.db.execute(
+            text("""
+                SELECT eph.employee_id, e.full_name AS employee_name,
+                       eph.bruto_bulanan AS actual_payroll
+                FROM employee_payroll_history eph
+                JOIN employee e ON e.id = eph.employee_id
+                WHERE eph.entity_id = :eid AND eph.year = :yr AND eph.month = :mo
+                  AND eph.bruto_bulanan > 0
+                ORDER BY e.full_name
+            """),
+            {"eid": entity_id, "yr": year, "mo": month}
+        ).fetchall()
+
+        if not payroll_rows:
+            return []
+
+        emp_ids = [str(r.employee_id) for r in payroll_rows]
+
+        analytic_rows = self.db.execute(
+            text("""
+                SELECT
+                    ajl.employee_id,
+                    ajl.project_id,
+                    p.project_code,
+                    p.project_name,
+                    ajl.cost_center,
+                    SUM(ajl.billable_hours)     AS hours,
+                    SUM(ajl.debit_amount)       AS estimate_cost
+                FROM analytic_journal aj
+                JOIN analytic_journal_line ajl ON ajl.journal_id = aj.id
+                LEFT JOIN project p ON p.id = ajl.project_id
+                WHERE aj.entity_id = :eid AND aj.year = :yr AND aj.month = :mo
+                  AND aj.status = 'posted'
+                  AND ajl.account_type IN ('direct_labor', 'idle_labor')
+                  AND ajl.employee_id = ANY(CAST(:eids AS uuid[]))
+                GROUP BY ajl.employee_id, ajl.project_id, p.project_code, p.project_name, ajl.cost_center
+            """),
+            {"eid": entity_id, "yr": year, "mo": month, "eids": emp_ids}
+        ).fetchall()
+
+        from collections import defaultdict
+        analytic_by_emp: dict[str, list] = defaultdict(list)
+        for r in analytic_rows:
+            analytic_by_emp[str(r.employee_id)].append(r)
+
+        result = []
+        for pr in payroll_rows:
+            emp_id       = str(pr.employee_id)
+            actual       = Decimal(str(pr.actual_payroll))
+            lines        = analytic_by_emp.get(emp_id, [])
+            total_est    = sum(Decimal(str(l.estimate_cost)) for l in lines)
+            variance     = actual - total_est
+            total_hours  = sum(Decimal(str(l.hours or 0)) for l in lines)
+
+            by_project = []
+            for l in lines:
+                est = Decimal(str(l.estimate_cost))
+                ratio = est / total_est if total_est else Decimal("0")
+                actual_alloc = (actual * ratio).quantize(Decimal("0.01"))
+                by_project.append({
+                    "project_code":  l.project_code or "BENCH",
+                    "project_name":  l.project_name or "Bench/Internal",
+                    "cost_center":   l.cost_center,
+                    "hours":         float(l.hours or 0),
+                    "estimate_cost": float(est),
+                    "actual_cost":   float(actual_alloc),
+                    "variance":      float(actual_alloc - est),
+                })
+
+            result.append({
+                "employee_id":    emp_id,
+                "employee_name":  pr.employee_name,
+                "actual_payroll": float(actual),
+                "estimate_cost":  float(total_est),
+                "variance":       float(variance),
+                "variance_pct":   round(float(variance / total_est * 100), 2) if total_est else None,
+                "total_hours":    float(total_hours),
+                "by_project":     by_project,
+            })
+
+        return result
+
+    # ── 9. Reporting ──────────────────────────────────────────────────────────
 
     def get_project_pnl(self, entity_id: str, year: int, month: Optional[int] = None) -> list:
         """Laporan Laba Rugi Per Proyek dari analytic journal."""

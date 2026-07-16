@@ -602,22 +602,17 @@ class PayrollEngine:
         created_by:  str = "system",
     ) -> dict:
         """
-        Posting jurnal akuntansi untuk run payroll satu periode.
+        Posting jurnal akuntansi untuk run payroll satu periode via JournalEngine
+        (double-entry validated, period-lock aware, account_code→id resolution).
 
-        Struktur jurnal (per karyawan, digabung jadi 1 batch journal):
-            Dr. Beban Gaji          (coa_map["beban_gaji"])
-            Dr. Beban Lembur        (coa_map["beban_lembur"])
-            Dr. Beban BPJS Perusahaan (coa_map["beban_bpjs"])
-            Cr. Hutang Gaji         (coa_map["hutang_gaji"])
-            Cr. Hutang PPh 21       (coa_map["hutang_pph21"])
-            Cr. Hutang BPJS Karyawan (coa_map["hutang_bpjs"])
+        Dr. Beban Gaji / Dr. Beban Lembur / Dr. Beban BPJS Perusahaan
+        Cr. Hutang Gaji / Cr. Hutang PPh 21 / Cr. Hutang BPJS Karyawan
 
-        Args:
-            results  : list hasil calculate_monthly / calculate_from_timesheet
-            coa_map  : dict mapping nama akun → kode COA (harus ada di chart_of_accounts)
+        coa_map keys: beban_gaji, beban_lembur, beban_bpjs,
+                      hutang_gaji, hutang_pph21, hutang_bpjs
         """
-        from uuid import uuid4
-        from datetime import date
+        from datetime import date as _date
+        from modules.journal_engine import JournalEngine, JournalEntry, JournalLine
 
         required_keys = ["beban_gaji", "beban_lembur", "beban_bpjs",
                          "hutang_gaji", "hutang_pph21", "hutang_bpjs"]
@@ -625,14 +620,13 @@ class PayrollEngine:
             if k not in coa_map:
                 return {"error": f"coa_map kurang key '{k}'"}
 
-        journal_date = date(year, month, 28)  # akhir bulan — approximation
+        if not results:
+            return {"error": "Tidak ada data payroll untuk diposting"}
 
-        # Hitung total
-        total_bruto       = Decimal("0")
-        total_lembur      = Decimal("0")
-        total_bpjs_perus  = Decimal("0")
-        total_pph21       = Decimal("0")
-        total_bpjs_karyw  = Decimal("0")
+        journal_date = _date(year, month, 28)
+
+        total_bruto = total_lembur = total_bpjs_perus = Decimal("0")
+        total_pph21 = total_bpjs_karyw = Decimal("0")
 
         for r in results:
             comp = r.get("komponen", {})
@@ -649,110 +643,59 @@ class PayrollEngine:
                 + Decimal(str(r.get("iuran_pensiun_karyawan", 0)))
             )
 
-        # Gaji netto = bruto - pph21 - iuran karyawan
         total_hutang_gaji = total_bruto - total_pph21 - total_bpjs_karyw
+        gaji_base         = total_bruto - total_lembur - total_bpjs_perus
 
-        # Buat GL journal header
-        journal_id = str(uuid4())
-        period_row = self.db.execute(
-            self.text("""
-                SELECT fp.id FROM fiscal_period fp
-                WHERE fp.entity_id = :entid
-                  AND fp.year = :year AND fp.period_no = :month
-                  AND fp.is_closed = FALSE
-                LIMIT 1
-            """),
-            {"entid": entity_id, "year": year, "month": month}
-        ).fetchone()
+        je_lines: list[JournalLine] = []
+        if gaji_base > 0:
+            je_lines.append(JournalLine(account_code=coa_map["beban_gaji"],   description="Beban Gaji",             debit_idr=gaji_base))
+        if total_lembur > 0:
+            je_lines.append(JournalLine(account_code=coa_map["beban_lembur"], description="Beban Lembur",           debit_idr=total_lembur))
+        if total_bpjs_perus > 0:
+            je_lines.append(JournalLine(account_code=coa_map["beban_bpjs"],   description="Beban BPJS Perusahaan",  debit_idr=total_bpjs_perus))
+        if total_hutang_gaji > 0:
+            je_lines.append(JournalLine(account_code=coa_map["hutang_gaji"],  description="Hutang Gaji",            credit_idr=total_hutang_gaji))
+        if total_pph21 > 0:
+            je_lines.append(JournalLine(account_code=coa_map["hutang_pph21"], description="Hutang PPh 21",          credit_idr=total_pph21))
+        if total_bpjs_karyw > 0:
+            je_lines.append(JournalLine(account_code=coa_map["hutang_bpjs"],  description="Hutang BPJS Karyawan",   credit_idr=total_bpjs_karyw))
 
-        if not period_row:
-            return {"error": f"Fiscal period {month:02d}/{year} tidak ditemukan atau sudah ditutup"}
+        je_result = JournalEngine(self.db).post_journal(JournalEntry(
+            entity_id=entity_id,
+            journal_type="PY",
+            journal_date=journal_date,
+            description=f"Run Payroll {month:02d}/{year} — {len(results)} karyawan",
+            reference_no=f"PAYROLL/{year}/{month:02d}",
+            created_by=created_by,
+            lines=je_lines,
+        ))
+        if not je_result["success"]:
+            return {"error": je_result.get("error", "JournalEngine gagal")}
 
-        period_id = period_row.id
-        self.db.execute(
-            self.text("""
-                INSERT INTO gl_journal (id, entity_id, journal_date, journal_type,
-                    reference_no, description, period_id, status, created_by, created_at)
-                VALUES (:id, :entid, :dt, 'PY', :ref, :desc, :pid, 'posted', :by, NOW())
-            """),
-            {
-                "id":    journal_id,
-                "entid": entity_id,
-                "dt":    journal_date,
-                "ref":   f"PAYROLL/{year}/{month:02d}",
-                "desc":  f"Run Payroll {month:02d}/{year} — {len(results)} karyawan",
-                "pid":   period_id,
-                "by":    created_by,
-            }
-        )
-
-        # Buat journal lines
-        lines = [
-            # Debit
-            (coa_map["beban_gaji"],   total_bruto - total_lembur - total_bpjs_perus, Decimal("0"), "Beban Gaji"),
-            (coa_map["beban_lembur"], total_lembur,    Decimal("0"), "Beban Lembur"),
-            (coa_map["beban_bpjs"],   total_bpjs_perus, Decimal("0"), "Beban BPJS Perusahaan"),
-            # Credit
-            (coa_map["hutang_gaji"],  Decimal("0"), total_hutang_gaji, "Hutang Gaji"),
-            (coa_map["hutang_pph21"], Decimal("0"), total_pph21,       "Hutang PPh 21"),
-            (coa_map["hutang_bpjs"],  Decimal("0"), total_bpjs_karyw,  "Hutang BPJS Karyawan"),
-        ]
-
-        for line_no, (coa_code, debit, credit, desc) in enumerate(lines, start=1):
-            if (debit + credit) == 0:
-                continue
+        emp_ids = [str(r["employee_id"]) for r in results if r.get("employee_id")]
+        if emp_ids:
             self.db.execute(
                 self.text("""
-                    INSERT INTO gl_journal_line (id, journal_id, line_no, account_code,
-                        debit_amount, credit_amount, description, created_at)
-                    VALUES (:id, :jid, :ln, :coa, :dr, :cr, :desc, NOW())
+                    UPDATE employee_payroll_history
+                    SET is_posted = TRUE, journal_id = :jid, updated_at = NOW()
+                    WHERE employee_id = ANY(CAST(:eids AS uuid[]))
+                      AND entity_id = :eid AND year = :yr AND month = :mo
                 """),
-                {
-                    "id":   str(uuid4()),
-                    "jid":  journal_id,
-                    "ln":   line_no,
-                    "coa":  coa_code,
-                    "dr":   float(debit),
-                    "cr":   float(credit),
-                    "desc": desc,
-                }
+                {"jid": je_result["journal_id"], "eids": emp_ids,
+                 "eid": entity_id, "yr": year, "mo": month}
             )
+            self.db.commit()
 
-        # Log payroll run
-        self.db.execute(
-            self.text("""
-                INSERT INTO payroll_run_log (id, entity_id, year, month, run_by,
-                    employees_count, total_bruto, total_pph21,
-                    total_bpjs, total_net, journal_id, status)
-                VALUES (:id, :entid, :year, :month, :by,
-                    :cnt, :bruto, :pph, :bpjs, :net, :jid, 'success')
-            """),
-            {
-                "id":    str(uuid4()),
-                "entid": entity_id,
-                "year":  year,
-                "month": month,
-                "by":    created_by,
-                "cnt":   len(results),
-                "bruto": float(total_bruto),
-                "pph":   float(total_pph21),
-                "bpjs":  float(total_bpjs_perus + total_bpjs_karyw),
-                "net":   float(total_hutang_gaji),
-                "jid":   journal_id,
-            }
-        )
-
-        self.db.commit()
         return {
-            "journal_id":     journal_id,
-            "period":         f"{month:02d}/{year}",
+            "journal_id":      je_result["journal_id"],
+            "journal_no":      je_result["journal_no"],
+            "period":          f"{month:02d}/{year}",
             "employees_count": len(results),
-            "total_bruto":    float(total_bruto),
-            "total_pph21":    float(total_pph21),
-            "total_bpjs":     float(total_bpjs_perus + total_bpjs_karyw),
-            "total_net_gaji": float(total_hutang_gaji),
-            "journal_lines":  len(lines),
-            "status":         "posted",
+            "total_bruto":     float(total_bruto),
+            "total_pph21":     float(total_pph21),
+            "total_bpjs":      float(total_bpjs_perus + total_bpjs_karyw),
+            "total_net_gaji":  float(total_hutang_gaji),
+            "status":          "posted",
         }
 
 

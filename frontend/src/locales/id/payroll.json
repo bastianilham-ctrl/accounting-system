@@ -28,5 +28,22 @@
   "createSuccess": "Payroll {{month}} {{year}} berhasil dibuat",
   "createFailed": "Gagal membuat payroll",
   "approveSuccess": "Payroll disetujui",
-  "approveFailed": "Gagal approve"
+  "approveFailed": "Gagal approve",
+  "lr_title": "Reclass Beban Gaji",
+  "lr_subtitle": "Distribusikan biaya gaji aktual ke proyek/cost center via GL",
+  "lr_bebanGajiCode": "Akun Beban Gaji",
+  "lr_postBtn": "Posting Reclass ke GL",
+  "lr_postSuccess": "Reclass diposting — {{journal_no}}, {{total}}, {{count}} karyawan",
+  "lr_postFailed": "Gagal posting reclass",
+  "lr_totalActual": "Total Gaji Aktual",
+  "lr_totalEstimate": "Total Estimasi (Timesheet)",
+  "lr_totalVariance": "Variance (Aktual − Estimasi)",
+  "lr_varianceTitle": "Laporan Variance — {{month}} {{year}}",
+  "lr_emptyTitle": "Tidak ada data payroll",
+  "lr_emptyDescription": "Tidak ada data payroll untuk periode ini. Jalankan payroll terlebih dahulu.",
+  "lr_colEmployee": "Karyawan",
+  "lr_colHours": "Jam",
+  "lr_colEstimate": "Biaya Estimasi",
+  "lr_colActual": "Gaji Aktual",
+  "lr_colVariance": "Variance"
 }

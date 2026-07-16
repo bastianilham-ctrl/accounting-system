@@ -47,9 +47,9 @@ uploads/
 # Junk files accidentally created by shell command output
 should
 to_release
-src/App.js
-src/index.js
-src/
+/src/App.js
+/src/index.js
+/src/
 
 # Temp / test artifacts
 scratchpad/

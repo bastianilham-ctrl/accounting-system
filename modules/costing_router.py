@@ -9,6 +9,8 @@
 #   /costing/allocation       — rules + execution engine
 #   /costing/period           — kontrol lock periode analitik
 #   /costing/reports          — project P&L, utilisasi, comparison
+#   /costing/labor-reclass    — GL reclass payroll ke per-project cost_center
+#   /costing/payroll-variance — variance analytic estimate vs aktual payroll
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -1202,3 +1204,48 @@ def list_analytic_journals(
         {"eid": entity_id, "yr": year, "mo": month}
     ).fetchall()
     return [dict(r._mapping) for r in rows]
+
+
+# ── Labor Reclass & Payroll Variance ─────────────────────────────────────────
+
+class LaborReclassPayload(BaseModel):
+    entity_id:       str
+    year:            int = Field(..., ge=2020, le=2099)
+    month:           int = Field(..., ge=1, le=12)
+    beban_gaji_code: str = Field(..., description="Account code untuk Beban Gaji (Dr + Cr offset)")
+
+
+@router.post(
+    "/labor-reclass",
+    dependencies=[Depends(require_min_role("finance"))],
+    summary="Distribusikan beban gaji aktual ke GL per-project/cost_center (Dr Beban Gaji per project, Cr Beban Gaji pool)",
+)
+def post_labor_reclass(
+    payload: LaborReclassPayload,
+    db:      Session = Depends(get_db),
+    user=    Depends(require_min_role("finance")),
+):
+    try:
+        return CostingEngine(db).post_labor_reclass(
+            entity_id=payload.entity_id,
+            year=payload.year,
+            month=payload.month,
+            beban_gaji_code=payload.beban_gaji_code,
+            created_by=user.get("email", "system"),
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@router.get(
+    "/payroll-variance",
+    dependencies=[Depends(require_min_role("viewer"))],
+    summary="Variance analytic estimate (timesheet × unit_cost) vs aktual payroll per karyawan",
+)
+def get_payroll_variance(
+    entity_id: str = Query(...),
+    year:      int = Query(...),
+    month:     int = Query(..., ge=1, le=12),
+    db:        Session = Depends(get_db),
+):
+    return CostingEngine(db).get_payroll_variance(entity_id, year, month)

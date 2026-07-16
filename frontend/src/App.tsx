@@ -19,6 +19,7 @@ import JournalListPage from './pages/journals/JournalListPage'
 import JournalFormPage from './pages/journals/JournalFormPage'
 import EmployeeListPage from './pages/employees/EmployeeListPage'
 import PayrollListPage from './pages/payroll/PayrollListPage'
+import LaborReclassPage from './pages/payroll/LaborReclassPage'
 import CashBankPage from './pages/cashbank/CashBankPage'
 import BankAccountPage from './pages/bank/BankAccountPage'
 import BankReconPage from './pages/bank/BankReconPage'
@@ -107,7 +108,8 @@ function AppRoutes() {
 
       {/* SDM & Payroll */}
       <Route path="/employees"    element={<P><EmployeeListPage /></P>} />
-      <Route path="/payroll"      element={<P><PayrollListPage /></P>} />
+      <Route path="/payroll"               element={<P><PayrollListPage /></P>} />
+      <Route path="/payroll/labor-reclass" element={<P><LaborReclassPage /></P>} />
       <Route path="/attendance"   element={<P><AttendancePage /></P>} />
 
       {/* Perpajakan */}

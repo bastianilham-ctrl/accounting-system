@@ -28,5 +28,22 @@
   "createSuccess": "Payroll {{month}} {{year}} created successfully",
   "createFailed": "Failed to create payroll",
   "approveSuccess": "Payroll approved",
-  "approveFailed": "Failed to approve"
+  "approveFailed": "Failed to approve",
+  "lr_title": "Labor Cost Reclass",
+  "lr_subtitle": "Distribute actual payroll costs to projects/cost centers via GL",
+  "lr_bebanGajiCode": "Salary Expense Account",
+  "lr_postBtn": "Post Reclass to GL",
+  "lr_postSuccess": "Reclass posted — {{journal_no}}, {{total}}, {{count}} employee(s)",
+  "lr_postFailed": "Failed to post reclass",
+  "lr_totalActual": "Total Actual Payroll",
+  "lr_totalEstimate": "Total Estimate (Timesheet)",
+  "lr_totalVariance": "Variance (Actual − Estimate)",
+  "lr_varianceTitle": "Variance Report — {{month}} {{year}}",
+  "lr_emptyTitle": "No payroll data",
+  "lr_emptyDescription": "No payroll records found for this period. Run payroll first.",
+  "lr_colEmployee": "Employee",
+  "lr_colHours": "Hours",
+  "lr_colEstimate": "Estimate Cost",
+  "lr_colActual": "Actual Payroll",
+  "lr_colVariance": "Variance"
 }

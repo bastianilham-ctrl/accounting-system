@@ -104,6 +104,7 @@ const NAV: NavItem[] = [
     children: [
       { labelKey: 'employees', href: '/employees' },
       { labelKey: 'payroll', href: '/payroll' },
+      { labelKey: 'laborReclass', href: '/payroll/labor-reclass' },
       { labelKey: 'attendance', href: '/attendance' },
     ],
   },
