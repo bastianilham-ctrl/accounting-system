@@ -1,0 +1,85 @@
+{
+  "claims_pageTitle": "Expense Claims & Reimbursement",
+  "claims_pageSubtitle": "Submission & payment of employee expense claims",
+  "claims_newClaim": "New Claim",
+
+  "claims_statTotalPeriod": "Total Claims (Period)",
+  "claims_statPendingAction": "{{count}} pending action",
+  "claims_statTotalClaimed": "Total Claimed",
+  "claims_statTotalApproved": "Total Approved",
+
+  "claims_formTitle": "New Expense Claim",
+  "claims_employeeId": "Employee ID",
+  "claims_claimDate": "Claim Date",
+  "claims_periodFrom": "Period From",
+  "claims_periodTo": "Period To",
+  "claims_purpose": "Purpose",
+  "claims_purposePlaceholder": "Description of this claim's purpose...",
+
+  "claims_linesTitle": "Expense Lines",
+  "claims_colCategory": "Category",
+  "claims_colQty": "Qty",
+  "claims_colUnitAmount": "Unit (Rp)",
+  "claims_selectPlaceholder": "Select...",
+  "claims_lineDescriptionPlaceholder": "Description...",
+  "claims_addLine": "Add Line",
+  "claims_saveDraft": "Save Claim (Draft)",
+
+  "claims_tabClaims": "Claims List",
+  "claims_tabAdvances": "Advances (Cash Advance)",
+
+  "claims_listTitle": "Expense Claims",
+  "claims_listSubtitle": "{{count}} claims",
+  "claims_dateRangeTo": "to",
+  "claims_emptyTitle": "No claims yet",
+  "claims_emptyDescription": "Click 'New Claim' to create an expense claim.",
+
+  "claims_colClaimNo": "Claim No.",
+  "claims_colEmployee": "Employee",
+  "claims_colPurpose": "Purpose",
+  "claims_colPeriod": "Period",
+  "claims_colTotalClaimed": "Total Claimed",
+  "claims_colApproved": "Approved",
+
+  "claims_actionSubmit": "Submit",
+  "claims_actionVerify": "Verify",
+  "claims_actionPay": "Pay",
+  "claims_rejectReasonPrompt": "Rejection reason:",
+
+  "claims_statusSubmitted": "Submitted",
+  "claims_statusRejected": "Rejected",
+  "claims_statusVerified": "Verified",
+  "claims_statusPaid": "Paid",
+
+  "claims_createSuccess": "Expense claim created successfully",
+  "claims_createFailed": "Failed to create claim",
+  "claims_submitSuccess": "Claim submitted",
+  "claims_submitFailed": "Failed to submit",
+  "claims_approveSuccess": "Claim approved",
+  "claims_approveFailed": "Failed to approve",
+  "claims_rejectSuccess": "Claim rejected",
+  "claims_rejectFailed": "Failed to reject",
+  "claims_verifySuccess": "Claim verified",
+  "claims_verifyFailed": "Failed to verify",
+  "claims_paySuccess": "Claim paid",
+  "claims_payFailed": "Failed to pay",
+
+  "advances_formTitle": "New Advance Request",
+  "advances_amountRequested": "Amount Requested (Rp)",
+  "advances_purposePlaceholder": "Purpose of advance...",
+  "advances_submitBtn": "Submit Advance Request",
+  "advances_newRequest": "Advance Request",
+
+  "advances_listTitle": "Advances / Cash Advance",
+  "advances_listSubtitle": "{{count}} requests",
+  "advances_emptyTitle": "No advances yet",
+
+  "advances_colAdvanceNo": "Advance No.",
+  "advances_colRequested": "Requested",
+  "advances_colDisbursed": "Disbursed",
+  "advances_colSettled": "Settled",
+  "advances_colBalance": "Balance",
+
+  "advances_createSuccess": "Advance request created",
+  "advances_createFailed": "Failed to create advance"
+}

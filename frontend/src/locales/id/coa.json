@@ -1,0 +1,22 @@
+{
+  "title": "Chart of Accounts",
+  "subtitle": "Daftar akun keuangan perusahaan",
+  "listTitle": "Daftar Akun",
+  "accountUnit": "akun",
+  "searchPlaceholder": "Cari kode atau nama akun...",
+  "emptyTitle": "Tidak ada akun",
+  "emptyDescription": "Coba ubah filter pencarian.",
+  "colAccountCode": "Kode Akun",
+  "colAccountName": "Nama Akun",
+  "colType": "Tipe",
+  "colNormalBalance": "Saldo Normal",
+  "colHeader": "Header",
+  "colActive": "Aktif",
+  "typeAll": "Semua Tipe",
+  "typeAsset": "Aset",
+  "typeLiability": "Kewajiban",
+  "typeEquity": "Ekuitas",
+  "typeRevenue": "Pendapatan",
+  "typeCogs": "HPP",
+  "typeExpense": "Beban"
+}

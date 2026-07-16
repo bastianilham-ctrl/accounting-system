@@ -1,0 +1,22 @@
+{
+  "title": "Chart of Accounts",
+  "subtitle": "List of company financial accounts",
+  "listTitle": "Account List",
+  "accountUnit": "accounts",
+  "searchPlaceholder": "Search account code or name...",
+  "emptyTitle": "No accounts",
+  "emptyDescription": "Try changing the search filter.",
+  "colAccountCode": "Account Code",
+  "colAccountName": "Account Name",
+  "colType": "Type",
+  "colNormalBalance": "Normal Balance",
+  "colHeader": "Header",
+  "colActive": "Active",
+  "typeAll": "All Types",
+  "typeAsset": "Asset",
+  "typeLiability": "Liability",
+  "typeEquity": "Equity",
+  "typeRevenue": "Revenue",
+  "typeCogs": "COGS",
+  "typeExpense": "Expense"
+}

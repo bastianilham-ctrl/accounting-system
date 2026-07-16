@@ -1,0 +1,12 @@
+- [x] Analyze currency requirements and existing code structure
+- [x] Identify affected files/modules (Vendor Invoices, Customer Invoices, Journal Entry)
+- [x] Design data model changes (add currency fields)
+- [x] Implement currency selection UI in invoice/journal entry forms
+- [x] Add exchange rate retrieval (manual or API)
+- [x] Implement currency conversion logic
+- [x] Calculate FX gains/losses and postings
+- [x] Update ledger posting to use base currency
+- [x] Adjust financial reports to consolidate in base currency (sudah otomatis — reports selalu sum debit_idr/credit_idr yang selalu IDR, tidak perlu ubah apa-apa)
+- [ ] Write unit tests for multi-currency scenarios
+- [x] Perform integration testing and validation (manual end-to-end via API: AP+AR invoice USD -> post journal -> bayar beda kurs -> realized G/L benar & balanced, lalu data test dibersihkan)
+- [ ] Update documentation

@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+*.egg
+.pytest_cache/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+
+# Logs
+*.log
+backend_log.txt
+frontend_log.txt
+vite_out.log
+vite_err.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+.claude-flow/
+.continue/
+.mcp.json
+
+# Fonts cache
+fonts.conf
+
+# Uploaded files (binary attachments, not source code)
+uploads/
+
+# Junk files accidentally created by shell command output
+should
+to_release
+src/App.js
+src/index.js
+src/
+
+# Temp / test artifacts
+scratchpad/

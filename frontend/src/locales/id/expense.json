@@ -1,0 +1,85 @@
+{
+  "claims_pageTitle": "Expense Claims & Reimbursement",
+  "claims_pageSubtitle": "Pengajuan & pembayaran klaim biaya karyawan",
+  "claims_newClaim": "Klaim Baru",
+
+  "claims_statTotalPeriod": "Total Klaim (Periode)",
+  "claims_statPendingAction": "{{count}} menunggu aksi",
+  "claims_statTotalClaimed": "Total Diajukan",
+  "claims_statTotalApproved": "Total Disetujui",
+
+  "claims_formTitle": "Klaim Expense Baru",
+  "claims_employeeId": "ID Karyawan",
+  "claims_claimDate": "Tanggal Klaim",
+  "claims_periodFrom": "Periode Dari",
+  "claims_periodTo": "Periode Sampai",
+  "claims_purpose": "Tujuan / Keperluan",
+  "claims_purposePlaceholder": "Deskripsi tujuan klaim ini...",
+
+  "claims_linesTitle": "Rincian Biaya",
+  "claims_colCategory": "Kategori",
+  "claims_colQty": "Qty",
+  "claims_colUnitAmount": "Satuan (Rp)",
+  "claims_selectPlaceholder": "Pilih...",
+  "claims_lineDescriptionPlaceholder": "Deskripsi...",
+  "claims_addLine": "Tambah Baris",
+  "claims_saveDraft": "Simpan Klaim (Draft)",
+
+  "claims_tabClaims": "Daftar Klaim",
+  "claims_tabAdvances": "Uang Muka (Kas Bon)",
+
+  "claims_listTitle": "Klaim Expense",
+  "claims_listSubtitle": "{{count}} klaim",
+  "claims_dateRangeTo": "s/d",
+  "claims_emptyTitle": "Belum ada klaim",
+  "claims_emptyDescription": "Klik 'Klaim Baru' untuk membuat klaim expense.",
+
+  "claims_colClaimNo": "No Klaim",
+  "claims_colEmployee": "Karyawan",
+  "claims_colPurpose": "Keperluan",
+  "claims_colPeriod": "Periode",
+  "claims_colTotalClaimed": "Total Diajukan",
+  "claims_colApproved": "Disetujui",
+
+  "claims_actionSubmit": "Ajukan",
+  "claims_actionVerify": "Verifikasi",
+  "claims_actionPay": "Bayar",
+  "claims_rejectReasonPrompt": "Alasan penolakan:",
+
+  "claims_statusSubmitted": "Diajukan",
+  "claims_statusRejected": "Ditolak",
+  "claims_statusVerified": "Diverifikasi",
+  "claims_statusPaid": "Dibayar",
+
+  "claims_createSuccess": "Klaim expense berhasil dibuat",
+  "claims_createFailed": "Gagal membuat klaim",
+  "claims_submitSuccess": "Klaim diajukan",
+  "claims_submitFailed": "Gagal submit",
+  "claims_approveSuccess": "Klaim disetujui",
+  "claims_approveFailed": "Gagal approve",
+  "claims_rejectSuccess": "Klaim ditolak",
+  "claims_rejectFailed": "Gagal reject",
+  "claims_verifySuccess": "Klaim diverifikasi",
+  "claims_verifyFailed": "Gagal verifikasi",
+  "claims_paySuccess": "Klaim dibayar",
+  "claims_payFailed": "Gagal bayar",
+
+  "advances_formTitle": "Permohonan Uang Muka Baru",
+  "advances_amountRequested": "Jumlah Diminta (Rp)",
+  "advances_purposePlaceholder": "Tujuan uang muka...",
+  "advances_submitBtn": "Ajukan Uang Muka",
+  "advances_newRequest": "Permohonan Uang Muka",
+
+  "advances_listTitle": "Uang Muka / Kas Bon",
+  "advances_listSubtitle": "{{count}} permohonan",
+  "advances_emptyTitle": "Belum ada uang muka",
+
+  "advances_colAdvanceNo": "No Uang Muka",
+  "advances_colRequested": "Diminta",
+  "advances_colDisbursed": "Dicairkan",
+  "advances_colSettled": "Settled",
+  "advances_colBalance": "Saldo",
+
+  "advances_createSuccess": "Permohonan uang muka dibuat",
+  "advances_createFailed": "Gagal buat uang muka"
+}

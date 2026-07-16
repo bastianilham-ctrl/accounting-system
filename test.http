@@ -1,0 +1,29 @@
+test.http
+### Test posting jurnal
+POST http://localhost:8000/journals/post
+Content-Type: application/json
+
+{
+  "entity_id": "6ca49dcc-9aa1-4d54-abb2-1c837eda1101",
+  "journal_type": "GL",
+  "journal_date": "2026-05-30",
+  "description": "Test jurnal pertama - PT Keenan Baskara Ahmad",
+  "lines": [
+    {
+      "account_code": "1-1-002",
+      "description": "Debit Bank BCA",
+      "debit_idr": 1000000,
+      "credit_idr": 0
+    },
+    {
+      "account_code": "4-1-001",
+      "description": "Kredit Pendapatan Jasa",
+      "debit_idr": 0,
+      "credit_idr": 1000000
+    }
+  ],
+  "source": "manual",
+  "created_by": "ilham"
+}
+### Test trial balance
+GET http://localhost:8000/reports/trial-balance/6ca49dcc-9aa1-4d54-abb2-1c837eda1101
