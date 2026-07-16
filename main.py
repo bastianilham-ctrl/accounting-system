@@ -64,6 +64,8 @@ from modules.financial_report_router import router as financial_report_router
 from modules.coa_router import router as coa_router
 from modules.cash_bank_router import router as cash_bank_router
 from modules.entity_router import router as entity_router
+from modules.contact_router import router as contact_router, person_router as contact_person_router
+from modules.email_marketing_router import router as email_marketing_router, tracking_router as email_tracking_router
 from modules.scheduler import start_scheduler
 from config.settings import settings
 from loguru import logger
@@ -183,6 +185,10 @@ app.include_router(financial_report_router,       dependencies=_auth_dep)
 app.include_router(coa_router,                    dependencies=_auth_dep)
 app.include_router(cash_bank_router,              dependencies=_auth_dep)
 app.include_router(entity_router,                 dependencies=_auth_dep)
+app.include_router(contact_router,                dependencies=_auth_dep)
+app.include_router(contact_person_router,         dependencies=_auth_dep)
+app.include_router(email_marketing_router,        dependencies=_auth_dep)
+app.include_router(email_tracking_router)   # public — no auth, for tracking pixel
 
 
 # ============================================================

@@ -54,6 +54,8 @@ import VendorRegistrationPage from './pages/procurement/VendorRegistrationPage'
 import ForecastPage from './pages/reports/ForecastPage'
 import InvoiceTemplatePage from './pages/settings/InvoiceTemplatePage'
 import OCRInvoicePage from './pages/accounting/OCRInvoicePage'
+import ContactPage from './pages/crm/ContactPage'
+import EmailMarketingPage from './pages/crm/EmailMarketingPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -144,6 +146,8 @@ function AppRoutes() {
       <Route path="/settings/opening-balance"   element={<P><OpeningBalancePage /></P>} />
       <Route path="/settings/invoice-template"  element={<P><InvoiceTemplatePage /></P>} />
       <Route path="/ocr"                         element={<P><OCRInvoicePage /></P>} />
+      <Route path="/crm/contacts"               element={<P><ContactPage /></P>} />
+      <Route path="/crm/email-marketing"        element={<P><EmailMarketingPage /></P>} />
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

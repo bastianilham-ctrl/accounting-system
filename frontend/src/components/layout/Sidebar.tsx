@@ -77,6 +77,14 @@ const NAV: NavItem[] = [
     icon: <FolderKanban className="h-4 w-4" />,
   },
   {
+    labelKey: 'crm',
+    icon: <Users className="h-4 w-4" />,
+    children: [
+      { labelKey: 'contacts', href: '/crm/contacts' },
+      { labelKey: 'emailMarketing', href: '/crm/email-marketing' },
+    ],
+  },
+  {
     labelKey: 'finance',
     icon: <CreditCard className="h-4 w-4" />,
     children: [
