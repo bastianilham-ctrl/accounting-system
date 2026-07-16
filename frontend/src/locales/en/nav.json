@@ -54,6 +54,7 @@
   "contracts": "Contract Tracker",
   "leave": "Leave Management",
   "auditTrail": "Audit Trail",
+  "deferredRevenue": "Deferred Revenue",
   "settings": "Settings",
   "users": "Users & Roles",
   "entities": "Entity / Company",

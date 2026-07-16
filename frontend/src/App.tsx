@@ -59,6 +59,7 @@ import EmailMarketingPage from './pages/crm/EmailMarketingPage'
 import AuditTrailPage from './pages/audit/AuditTrailPage'
 import LeavePage from './pages/hr/LeavePage'
 import ContractPage from './pages/contracts/ContractPage'
+import DeferredRevenuePage from './pages/finance/DeferredRevenuePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -154,6 +155,7 @@ function AppRoutes() {
       <Route path="/audit"                      element={<P><AuditTrailPage /></P>} />
       <Route path="/leave"                      element={<P><LeavePage /></P>} />
       <Route path="/contracts"                  element={<P><ContractPage /></P>} />
+      <Route path="/deferred-revenue"           element={<P><DeferredRevenuePage /></P>} />
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

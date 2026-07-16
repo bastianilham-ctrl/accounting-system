@@ -97,6 +97,7 @@ const NAV: NavItem[] = [
       { labelKey: 'bank', href: '/bank' },
       { labelKey: 'bankRecon', href: '/bank-recon' },
       { labelKey: 'expenseClaims', href: '/expense-claims' },
+      { labelKey: 'deferredRevenue', href: '/deferred-revenue' },
     ],
   },
   {
