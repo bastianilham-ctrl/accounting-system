@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BookOpen, FileText, TrendingUp, ShoppingCart,
   BarChart2, Users, Settings, ChevronDown, ChevronRight, DollarSign,
   Briefcase, CreditCard, Receipt, Calculator, PieChart, ClipboardList,
-  Package, FolderKanban, Warehouse,
+  Package, FolderKanban, Warehouse, Shield,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '../../lib/utils'
@@ -77,6 +77,11 @@ const NAV: NavItem[] = [
     icon: <FolderKanban className="h-4 w-4" />,
   },
   {
+    labelKey: 'contracts',
+    href: '/contracts',
+    icon: <FileText className="h-4 w-4" />,
+  },
+  {
     labelKey: 'crm',
     icon: <Users className="h-4 w-4" />,
     children: [
@@ -120,6 +125,7 @@ const NAV: NavItem[] = [
       { labelKey: 'laborReclass', href: '/payroll/labor-reclass' },
       { labelKey: 'payrollDisbursement', href: '/payroll/disbursement' },
       { labelKey: 'attendance', href: '/attendance' },
+      { labelKey: 'leave', href: '/leave' },
     ],
   },
   {
@@ -146,6 +152,11 @@ const NAV: NavItem[] = [
       { labelKey: 'exchangeRates', href: '/multicurrency/rates' },
       { labelKey: 'revaluation', href: '/multicurrency/revaluation' },
     ],
+  },
+  {
+    labelKey: 'auditTrail',
+    href: '/audit',
+    icon: <Shield className="h-4 w-4" />,
   },
   {
     labelKey: 'settings',
