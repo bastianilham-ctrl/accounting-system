@@ -28,6 +28,9 @@ const NAV: NavItem[] = [
     children: [
       { labelKey: 'coa', href: '/coa' },
       { labelKey: 'journals', href: '/journals' },
+      { labelKey: 'yearEnd', href: '/year-end' },
+      { labelKey: 'intercompany', href: '/intercompany' },
+      { labelKey: 'ocrInvoice', href: '/ocr' },
     ],
   },
   {
@@ -50,6 +53,7 @@ const NAV: NavItem[] = [
     children: [
       { labelKey: 'apInvoices', href: '/ap/invoices' },
       { labelKey: 'apPayments', href: '/ap/payments' },
+      { labelKey: 'vendorRegistration', href: '/vendor-registration' },
     ],
   },
   {
@@ -96,6 +100,7 @@ const NAV: NavItem[] = [
       { labelKey: 'profitLoss', href: '/reports/profit-loss' },
       { labelKey: 'generalLedger', href: '/reports/general-ledger' },
       { labelKey: 'cashFlow', href: '/reports/cash-flow' },
+      { labelKey: 'forecast', href: '/reports/forecast' },
     ],
   },
   {
@@ -105,6 +110,7 @@ const NAV: NavItem[] = [
       { labelKey: 'employees', href: '/employees' },
       { labelKey: 'payroll', href: '/payroll' },
       { labelKey: 'laborReclass', href: '/payroll/labor-reclass' },
+      { labelKey: 'payrollDisbursement', href: '/payroll/disbursement' },
       { labelKey: 'attendance', href: '/attendance' },
     ],
   },
@@ -139,6 +145,8 @@ const NAV: NavItem[] = [
     children: [
       { labelKey: 'users', href: '/settings/users' },
       { labelKey: 'entities', href: '/settings/entities' },
+      { labelKey: 'openingBalance', href: '/settings/opening-balance' },
+      { labelKey: 'invoiceTemplate', href: '/settings/invoice-template' },
     ],
   },
 ]

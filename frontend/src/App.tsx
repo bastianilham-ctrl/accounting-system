@@ -46,6 +46,14 @@ import ExchangeRatesPage from './pages/multicurrency/ExchangeRatesPage'
 import RevaluationPage from './pages/multicurrency/RevaluationPage'
 import UsersPage from './pages/settings/UsersPage'
 import EntitiesPage from './pages/settings/EntitiesPage'
+import OpeningBalancePage from './pages/settings/OpeningBalancePage'
+import YearEndClosingPage from './pages/accounting/YearEndClosingPage'
+import IntercompanyPage from './pages/accounting/IntercompanyPage'
+import PayrollDisbursementPage from './pages/payroll/PayrollDisbursementPage'
+import VendorRegistrationPage from './pages/procurement/VendorRegistrationPage'
+import ForecastPage from './pages/reports/ForecastPage'
+import InvoiceTemplatePage from './pages/settings/InvoiceTemplatePage'
+import OCRInvoicePage from './pages/accounting/OCRInvoicePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -74,6 +82,8 @@ function AppRoutes() {
       <Route path="/coa"           element={<P><COAPage /></P>} />
       <Route path="/journals"      element={<P><JournalListPage /></P>} />
       <Route path="/journals/new"  element={<P><JournalFormPage /></P>} />
+      <Route path="/year-end"        element={<P><YearEndClosingPage /></P>} />
+      <Route path="/intercompany"   element={<P><IntercompanyPage /></P>} />
 
       {/* AR */}
       <Route path="/ar/invoices"  element={<P><ARInvoicePage /></P>} />
@@ -87,7 +97,8 @@ function AppRoutes() {
       <Route path="/ap/payments"  element={<P><APPaymentsPage /></P>} />
       <Route path="/pr"           element={<P><PRPage /></P>} />
       <Route path="/po"           element={<P><POPage /></P>} />
-      <Route path="/item-master"  element={<P><ItemMasterPage /></P>} />
+      <Route path="/item-master"          element={<P><ItemMasterPage /></P>} />
+      <Route path="/vendor-registration"  element={<P><VendorRegistrationPage /></P>} />
       <Route path="/projects"     element={<P><ProjectsPage /></P>} />
       <Route path="/projects/:id" element={<P><ProjectDetailPage /></P>} />
 
@@ -104,12 +115,14 @@ function AppRoutes() {
       <Route path="/reports/balance-sheet"   element={<P><BalanceSheetPage /></P>} />
       <Route path="/reports/profit-loss"     element={<P><ProfitLossPage /></P>} />
       <Route path="/reports/general-ledger"  element={<P><GeneralLedgerPage /></P>} />
-      <Route path="/reports/cash-flow"       element={<P><CashFlowPage /></P>} />
+      <Route path="/reports/cash-flow"        element={<P><CashFlowPage /></P>} />
+      <Route path="/reports/forecast"        element={<P><ForecastPage /></P>} />
 
       {/* SDM & Payroll */}
       <Route path="/employees"    element={<P><EmployeeListPage /></P>} />
       <Route path="/payroll"               element={<P><PayrollListPage /></P>} />
       <Route path="/payroll/labor-reclass" element={<P><LaborReclassPage /></P>} />
+      <Route path="/payroll/disbursement"  element={<P><PayrollDisbursementPage /></P>} />
       <Route path="/attendance"   element={<P><AttendancePage /></P>} />
 
       {/* Perpajakan */}
@@ -126,8 +139,11 @@ function AppRoutes() {
       <Route path="/multicurrency/revaluation" element={<P><RevaluationPage /></P>} />
 
       {/* Pengaturan */}
-      <Route path="/settings/users"    element={<P><UsersPage /></P>} />
-      <Route path="/settings/entities" element={<P><EntitiesPage /></P>} />
+      <Route path="/settings/users"            element={<P><UsersPage /></P>} />
+      <Route path="/settings/entities"         element={<P><EntitiesPage /></P>} />
+      <Route path="/settings/opening-balance"   element={<P><OpeningBalancePage /></P>} />
+      <Route path="/settings/invoice-template"  element={<P><InvoiceTemplatePage /></P>} />
+      <Route path="/ocr"                         element={<P><OCRInvoicePage /></P>} />
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
